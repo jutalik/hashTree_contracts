@@ -1,5 +1,7 @@
 import { HardhatUserConfig } from "hardhat/config";
 import "@nomicfoundation/hardhat-toolbox";
+require("@nomiclabs/hardhat-ethers");
+require("@openzeppelin/hardhat-upgrades");
 
 const config: HardhatUserConfig = {
   solidity: "0.8.17",
@@ -8,7 +10,9 @@ const config: HardhatUserConfig = {
       url: process.env.KLAYTN_MAINNET || "",
       gasPrice: 250000000000,
       accounts:
-        process.env.DEV_PRIVATE_KEY !== undefined ? [process.env.DEV_PRIVATE_KEY] : [],
+        process.env.KLAY_DEV_PRIVATE_KEY !== undefined
+          ? [process.env.KLAY_DEV_PRIVATE_KEY]
+          : [],
     },
   },
   gasReporter: {
