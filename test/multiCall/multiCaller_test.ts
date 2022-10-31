@@ -1,74 +1,46 @@
-import { ethers } from "hardhat";
-import { BigNumber } from "ethers";
-import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
-import chai from "chai";
-import BN from "bn.js";
+import {expect} from "chai"
+import hre from 'hardhat'
+import { isCallTrace } from "hardhat/internal/hardhat-network/stack-traces/message-trace"
+import {loadFixture} from "ethereum-waffle"
 
-import { ERC20PresetMinterPauser, MultiCaller } from "../../typechain-types";
 
-const expect = chai.expect;
-chai.use(require("chai-bn")(BN));
+import chai from 'chai';
+import BN from 'bn.js';
 
-let ERC20PresetMinterPauser: ERC20PresetMinterPauser;
-let MultiCaller: MultiCaller;
+chai.use(require('chai-bn')(BN));
 
-describe("multiCaller TEST", function () {
-  // test case 동작전 실행 사항들
-  beforeEach(async () => {
-    // deploy & init
-    const [_admin, _sendManager, _user1, _user2, _user3, _user4] =
-      await ethers.getSigners();
 
-    // multicall contract
-    const NEW_MultiCaller = await ethers.getContractFactory("multiCaller");
-    await NEW_MultiCaller.connect(_admin).deploy();
+describe("MultiCaller", async function () {
+  const [admin, sendManager, user2, user3, user4] = await hre.ethers.getSigners()
 
-    //test erc20 contract
-    const NEW_ERC20_1 = await ethers.getContractFactory(
-      "ERC20PresetMinterPauser"
-    );
-    const NEW_ERC20_2 = await ethers.getContractFactory(
-      "ERC20PresetMinterPauser"
-    );
-    const NEW_ERC20_3 = await ethers.getContractFactory(
-      "ERC20PresetMinterPauser"
-    );
-    const NEW_ERC20_4 = await ethers.getContractFactory(
-      "ERC20PresetMinterPauser"
-    );
+  async function deployContracts() {
+    const MultiCaller = await hre.ethers.getContractFactory("multiCaller")
+    const multiCaller = await MultiCaller.connect(admin).deploy()
+    await multiCaller.connect(admin).changeOwner(sendManager.address)
+    
+    const PER = await hre.ethers.getContractFactory("PER");
+    const per = await PER.connect(user2).deploy(10000000000,"test1","test1");
+    const per2 = await PER.connect(user3).deploy(10000000000,"test2","test2");
+    const per3 = await PER.connect(user4).deploy(10000000000,"test3","test3");
+    return {multiCaller, per, per2, per3}
+  }
 
-    await NEW_ERC20_1.connect(_user1).deploy("TEST1", "TEST1");
-    await NEW_ERC20_2.connect(_user2).deploy("TEST2", "TEST2");
-    await NEW_ERC20_3.connect(_user3).deploy("TEST3", "TEST3");
-    await NEW_ERC20_4.connect(_user4).deploy("TEST3", "TEST4");
+  it("should be able to call multiple contracts", async () => {
+    const {multiCaller, per, per2, per3} = await loadFixture(deployContracts)
+    // const [admin, sendManager, user2, user3, user4] = await hre.ethers.getSigners()
+    
+    await per.connect(user2).transferFrom(user2.address,multiCaller.address, 10000000000)
+    await per2.connect(user3).transferFrom(user3.address,multiCaller.address, 10000000000)
+    await per3.connect(user4).transferFrom(user4.address,multiCaller.address, 10000000000)
+    
+    
+    const data = per.interface.encodeFunctionData("balanceOf", [multiCaller.address])
+    const data2 = per2.interface.encodeFunctionData("balanceOf", [multiCaller.address])
+    const data3 = per3.interface.encodeFunctionData("balanceOf", [multiCaller.address])
 
-    console.log("deploy success");
-  });
-  //
-  // it("NEW_ERC20, mint to MultiCaller", async function () {
-  //   const [_admin, _sendManager ,_user1, _user2, _user3, _user4] = await ethers.getSigners();
-  //   await NEW_ERC20_1.connect()
-
-  // })
-
-  // test case
-  it("_admin(deployer) to deyployed then, sendManagerSet  ", async () => {
-    const [_admin, _sendManager, _user1, _user2, _user3, _user4] =
-      await ethers.getSigners();
-    const sendManager = await MultiCaller.sendManager();
-    expect(sendManager).to.equal(_admin.address);
-
-    await MultiCaller.connect(_admin).changeOwner(_sendManager.address);
-  });
-
-  // it("Deployment should assign the total supply of tokens to the owner", async function () {
-  //   const [owner] = await ethers.getSigners();
-
-  //   const Token = await ethers.getContractFactory("Token");
-
-  //   const hardhatToken = await Token.deploy();
-
-  //   const ownerBalance = await hardhatToken.balanceOf(owner.address);
-  //   expect(await hardhatToken.totalSupply()).to.equal(ownerBalance);
-  // });
-});
+    expect(data).to.equal(10000000000)
+    expect(data2).to.equal(10000000000)
+    expect(data3).to.equal(10000000000)
+    
+  })
+})

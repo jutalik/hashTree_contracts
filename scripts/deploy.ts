@@ -21,7 +21,7 @@ async function main() {
   // await bank.deployed();
   // console.log("Bank deployed to:", bank.address);
 
-  const depositorsAddr = process.env.DEV_PRIVATE_KEY || "";
+  const depositorsAddr = process.env.KLAY_DEV_PRIVATE_KEY || "";
   const depositor1 = await ethers.getSigner(depositorsAddr);
   const bankInstance = await ethers.getContractAt(
     "KlayBank",
