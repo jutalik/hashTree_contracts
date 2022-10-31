@@ -69,6 +69,11 @@ contract ChannelIn is Initializable, UUPSUpgradeable, OwnableUpgradeable {
     function setPaymentDeadline(uint _paymentDeadline) public onlyOwner {
         paymentDeadline = _paymentDeadline;
     }
+
+    // 채널IN에서 사용하는 V1용 어드민 출금 함수
+    function widthdraws(address _token, address _to, uint _amount) public onlyOwner {
+        IERC20(_token).transfer(_to, _amount);
+    }
     /**************************************/
 
     
@@ -128,6 +133,7 @@ contract ChannelIn is Initializable, UUPSUpgradeable, OwnableUpgradeable {
     // 2. 균등 분배. (참여한 유저들에 대해 균등하게 분배)
     // 3. 순위 분배. (순위에 대한 지급 퍼센트를 미리 정해놓고 순위에 따라 지급)
     // 4. 랜덤 분배. (랜덤으로 지급)
+
 
 
 
