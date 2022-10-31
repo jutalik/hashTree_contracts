@@ -7,7 +7,7 @@ import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import '@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol';
 import '@openzeppelin/contracts/utils/math/SafeMath.sol';
 
-contract BatchSendERC20{
+contract multiCaller{
     using SafeMath for uint256;
     using SafeERC20 for IERC20;
 
@@ -51,7 +51,7 @@ contract BatchSendERC20{
     /* 2.전송하는 토큰 종류의 ERC20 Interface는 체크하지 않음.(즉, 비정상적인 ERC20일 경우 전송이 되지 않을 수 있음) */
     /* 3.가스피 최적화를 최대한 했으나 한번에 보내는 [].length는 확인 해봐야 함 */
     
-    
+
     // 단일 토큰 전송
     function WithdrawToken(IERC20 token, uint256 amount) external onlySendManager {
         token.safeTransfer(msg.sender, amount);
