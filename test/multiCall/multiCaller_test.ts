@@ -44,7 +44,7 @@ describe("multiCaller TEST", function () {
 
     console.log("deploy success");
   });
-
+  //
   // it("NEW_ERC20, mint to MultiCaller", async function () {
   //   const [_admin, _sendManager ,_user1, _user2, _user3, _user4] = await ethers.getSigners();
   //   await NEW_ERC20_1.connect()
