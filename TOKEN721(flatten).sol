@@ -1,9 +1,4 @@
-// Sources flattened with hardhat v2.12.0 https://hardhat.org
 
-// File @openzeppelin/contracts-upgradeable/utils/CountersUpgradeable.sol@v4.7.3
-
-// SPDX-License-Identifier: MIT
-// OpenZeppelin Contracts v4.4.1 (utils/Counters.sol)
 
 pragma solidity ^0.8.0;
 

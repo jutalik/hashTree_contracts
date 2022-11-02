@@ -7,6 +7,14 @@ import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import '@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol';
 import '@openzeppelin/contracts/utils/math/SafeMath.sol';
 
+
+
+
+
+// hardhat test console
+import "hardhat/console.sol";
+
+
 contract multiCaller{
     using SafeMath for uint256;
     using SafeERC20 for IERC20;
@@ -27,18 +35,22 @@ contract multiCaller{
 
     constructor() {
         dev = msg.sender;
+        console.log('constructor dev address : ', dev);
     }
 
 
     // 채널IN 담당자 월렛을 변경하는 함수
     function changeOwner(address _newManager) external onlyDev {
         sendManager = _newManager;
+        console.log('change Manager Wallet address : ', sendManager);
     }
 
 
 
     // 현재 컨트랙트가 토큰을 소유하고 있는지 확인
     function getTokenBalance(IERC20 token) public view returns (uint256) {
+        console.log('IERC20 token address : ', address(token));
+        console.log('IERC20 token address : ', token.balanceOf(address(this)));
         return token.balanceOf(address(this));
     }
     
@@ -52,9 +64,12 @@ contract multiCaller{
     /* 3.가스피 최적화를 최대한 했으나 한번에 보내는 [].length는 확인 해봐야 함 */
     
 
+
+
     // 단일 토큰 전송
-    function WithdrawToken(IERC20 token, uint256 amount) external onlySendManager {
-        token.safeTransfer(msg.sender, amount);
+    function WithdrawToken(IERC20 token, address to, uint256 amount) external onlySendManager {
+        // console.log('WithdrawToken : ', to, amount);
+        token.safeTransfer(to, amount);
     }
 
     // 다중 토큰 전송 funcions //
@@ -62,13 +77,14 @@ contract multiCaller{
     function multiSendFixedToken(IERC20 token, address[] memory recipients, uint256 amount) external onlySendManager {
         
         address from = address(this);
-        
+        console.log(from);
         require(recipients.length > 0);
         require(amount > 0);
         require(recipients.length * amount <= token.balanceOf(address(this)));
-        
         for (uint256 i = 0; i < recipients.length; i++) {
-            token.safeTransferFrom(from, recipients[i], amount);
+            token.safeTransfer(recipients[i], amount);
+            // console.log(this.getTokenBalance(token));
+            // console.log(i, recipients[i], amount);
         }
         
     }  
@@ -91,7 +107,7 @@ contract multiCaller{
             currentSum = currentSum.add(amount);
             require(currentSum <= thisBalance);
             
-            token.safeTransferFrom(from, recipients[i], amount);
+            token.safeTransfer(recipients[i], amount);
         }
     }   
 
